@@ -5,13 +5,15 @@ import { useState } from "react";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { saveApiProduct } from "./services";
+import { useNavigate } from "react-router-dom";
+import { toastService } from "../../utils/toastConfig";
 
 export type FormProducts = {
     name: string;
     manufacturer: string;
     category: string;
     price: string;
-    description: string;
+    description?: string;
     url1: string;
     url2: string;
 };
@@ -53,7 +55,7 @@ const schema = yup.object().shape({
         .required("A descrição do produto é obrigatória")
         .min(10, "A descrição deve ter pelo menos 10 caracteres")
         .test("not-empty-html", "A descrição não pode estar vazia", (value) => {
-            if (!value) return false;
+            if (!value) return true;
             const textContent = value.replace(/<[^>]*>/g, '').trim();
             return textContent.length > 0;
         }),
@@ -72,25 +74,10 @@ const schema = yup.object().shape({
 });
 
 export default function FormProducts() {
-    const { token } = useAuthSessionStore()
-
+    const navigate = useNavigate();
     const [value, setValue] = useState("");
-
-    const onSubmit = (data: FormProducts) => {
-        console.log("Dados do formulário:", data);
-        alert("Produto cadastrado com sucesso!");
-        reset();
-    };
-
-    async function saveProduct(values: FormProducts) {
-        try {
-            const response = await saveApiProduct({ ...values, description: value }, token);
-            alert("Produto cadastrado com sucesso");
-        } catch (error) {
-            alert("Erro ao cadastrar produto");
-        }
-        // console.log("values");
-    }
+    // Simulando token para desenvolvimento local - remover em produção
+    const token = "dev-token-local";
 
     const {
         register,
@@ -105,6 +92,26 @@ export default function FormProducts() {
             description: ""
         }
     });
+
+    async function saveProduct(values: FormProducts) {
+        try {
+            await saveApiProduct({ ...values, description: value }, token);
+            toastService.success("Produto cadastrado com sucesso!");
+            reset();
+            setValue("");
+            navigate("/my-products");
+        } catch (error) {
+            toastService.apiError(error, "Erro ao cadastrar produto");
+        }
+    }
+
+    function handleCancel() {
+        if (window.confirm("Deseja realmente cancelar? Todos os dados serão perdidos.")) {
+            reset();
+            setValue("");
+            navigate("/my-products");
+        }
+    }
 
     // Lista de categorias
     const categorias = [
@@ -266,13 +273,16 @@ export default function FormProducts() {
                     {/* Botões  */}
                     <div className="flex justify-center gap-4 mt-4">
                         <button
-                            type="submit"
-                            className="bg-primary text-white px-8 py-2 rounded-lg">
+                            // type="submit"
+                            className="bg-primary text-white px-8 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+                        >
                             Salvar
                         </button>
                         <button
-                            onClick={() => alert("")}
-                            className="bg-white text-primary border border-primary px-8 py-2 rounded-lg">
+                            type="button"
+                            onClick={handleCancel}
+                            className="bg-white text-primary border border-primary px-8 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
                             Cancelar
                         </button>
                     </div>
@@ -280,8 +290,4 @@ export default function FormProducts() {
             </form>
         </div>
     );
-}
-
-function useAuthSessionStore(): { token: any; } {
-    throw new Error("Function not implemented.");
 }

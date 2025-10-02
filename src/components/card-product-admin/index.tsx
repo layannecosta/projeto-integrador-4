@@ -3,7 +3,6 @@ import { IoTrashOutline, IoPencilOutline } from "react-icons/io5"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import Modal from 'react-modal';
-import { removeApiProduct } from "./services";
 
 const customStyles = {
     content: {
@@ -18,7 +17,7 @@ const customStyles = {
 
 Modal.setAppElement('#root');
 
-export default function CardProductAdmin(props: CardProps) {
+export default function CardProductAdmin() {
 
     const [modalIsOpen, setIsOpen] = useState(false);
 
@@ -33,10 +32,6 @@ export default function CardProductAdmin(props: CardProps) {
 
     const handleEdit = () => {
         navigate("/form-products");
-    }
-
-    async function removeProduct(params: type) {
-        removeApiProduct(props.id)
     }
 
     return (

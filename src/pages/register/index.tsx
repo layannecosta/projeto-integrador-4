@@ -2,9 +2,11 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { registerUser } from "./services";
+import { useNavigate } from "react-router-dom";
+import { toastService } from "../../utils/toastConfig";
+import { useState } from "react";
 
-
-type RegisterForm = {
+export type RegisterForm = {
     name: string;
     email: string;
     phone: string;
@@ -13,7 +15,6 @@ type RegisterForm = {
     password: string;
 }
 
-// Schema de validação com Yup
 const schema = yup.object().shape({
     name: yup
         .string()
@@ -55,26 +56,26 @@ const schema = yup.object().shape({
 });
 
 export default function Register() {
+    const navigate = useNavigate();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const {
         register,
         handleSubmit,
         reset,
         formState: { errors },
         setValue,
-        watch
     } = useForm<RegisterForm>({
         resolver: yupResolver(schema) as any,
         mode: "onBlur"
     });
 
-    // Lista de estados brasileiros
-    const state = [
+    const estados = [
         "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
         "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
         "RS", "RO", "RR", "SC", "SP", "SE", "TO"
     ];
 
-    // Função para formatar telefone automaticamente
     const formatPhone = (value: string): string => {
         const numbers = value.replace(/\D/g, "");
 
@@ -89,36 +90,32 @@ export default function Register() {
         }
     };
 
-    // Handler para formatar telefone em tempo real
     const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const formatted = formatPhone(e.target.value);
         setValue("phone", formatted, { shouldValidate: true });
     };
 
-    // Função de submit
-    const onSubmit = (data: RegisterForm) => {
-        console.log("Dados do cadastro:", data);
-        alert("Cadastro realizado com sucesso!");
-        reset();
-    };
-
     async function createUser(values: RegisterForm) {
+        setIsSubmitting(true);
         try {
-            const response = await registerUser(values)
-            console.log(response.data);
+            const response = await registerUser(values);
+            toastService.success("Usuário cadastrado com sucesso!");
             reset();
-            alert("Usuário cadastrado com sucesso!");
+
+            setTimeout(() => {
+                navigate("/login");
+            }, 1500);
         } catch (error) {
-            alert("Não foi possível fazer login. Revise as informações e tente novamente")
+            toastService.apiError(error, "Não foi possível criar a conta");
+        } finally {
+            setIsSubmitting(false);
         }
     }
 
     return (
         <div className="min-h-screen flex items-center justify-center px-4 py-8">
             <div className="w-full max-w-2xl">
-                {/* Container principal */}
                 <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-                    {/* Header colorido */}
                     <div className="bg-gradient-to-r from-primary to-primary/90 px-8 py-8 text-center relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
                         <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
@@ -129,18 +126,16 @@ export default function Register() {
                         </div>
                     </div>
 
-                    {/* Formulário */}
                     <div className="px-8 py-8">
                         <form onSubmit={handleSubmit(createUser)} className="space-y-6">
-                            {/* Grid para campos em linha */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Campo Nome */}
                                 <div className="space-y-2 md:col-span-2">
                                     <label className="text-gray-700 font-medium">Nome Completo *</label>
                                     <input
                                         {...register("name")}
                                         type="text"
-                                        className={`w-full border-2 h-[40px] px-4 rounded-lg bg-gray-50 focus:bg-white focus:outline-none transition-all duration-200 ${errors.name ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-primary"
+                                        disabled={isSubmitting}
+                                        className={`w-full border-2 h-[40px] px-4 rounded-lg bg-gray-50 focus:bg-white focus:outline-none transition-all duration-200 disabled:opacity-50 ${errors.name ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-primary"
                                             }`}
                                         placeholder="Digite seu nome completo"
                                     />
@@ -149,13 +144,13 @@ export default function Register() {
                                     )}
                                 </div>
 
-                                {/* Campo Email */}
                                 <div className="space-y-2">
                                     <label className="text-gray-700 font-medium">E-mail *</label>
                                     <input
                                         {...register("email")}
                                         type="email"
-                                        className={`w-full border-2 h-[40px] px-4 rounded-lg bg-gray-50 focus:bg-white focus:outline-none transition-all duration-200 ${errors.email ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-primary"
+                                        disabled={isSubmitting}
+                                        className={`w-full border-2 h-[40px] px-4 rounded-lg bg-gray-50 focus:bg-white focus:outline-none transition-all duration-200 disabled:opacity-50 ${errors.email ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-primary"
                                             }`}
                                         placeholder="Digite seu e-mail"
                                     />
@@ -164,7 +159,6 @@ export default function Register() {
                                     )}
                                 </div>
 
-                                {/* Campo Telefone */}
                                 <div className="space-y-2">
                                     <label className="text-gray-700 font-medium">Telefone *</label>
                                     <input
@@ -172,7 +166,8 @@ export default function Register() {
                                         type="tel"
                                         onChange={handleTelefoneChange}
                                         maxLength={15}
-                                        className={`w-full border-2 h-[40px] px-4 rounded-lg bg-gray-50 focus:bg-white focus:outline-none transition-all duration-200 ${errors.phone ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-primary"
+                                        disabled={isSubmitting}
+                                        className={`w-full border-2 h-[40px] px-4 rounded-lg bg-gray-50 focus:bg-white focus:outline-none transition-all duration-200 disabled:opacity-50 ${errors.phone ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-primary"
                                             }`}
                                         placeholder="(11) 99999-9999"
                                     />
@@ -181,13 +176,13 @@ export default function Register() {
                                     )}
                                 </div>
 
-                                {/* Campo Cidade */}
                                 <div className="space-y-2">
                                     <label className="text-gray-700 font-medium">Cidade *</label>
                                     <input
                                         {...register("city")}
                                         type="text"
-                                        className={`w-full border-2 h-[40px] px-4 rounded-lg bg-gray-50 focus:bg-white focus:outline-none transition-all duration-200 ${errors.city ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-primary"
+                                        disabled={isSubmitting}
+                                        className={`w-full border-2 h-[40px] px-4 rounded-lg bg-gray-50 focus:bg-white focus:outline-none transition-all duration-200 disabled:opacity-50 ${errors.city ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-primary"
                                             }`}
                                         placeholder="Digite sua cidade"
                                     />
@@ -196,18 +191,18 @@ export default function Register() {
                                     )}
                                 </div>
 
-                                {/* Campo Estado */}
                                 <div className="space-y-2">
                                     <label className="text-gray-700 font-medium">Estado *</label>
                                     <select
                                         {...register("state")}
-                                        className={`w-full border-2 h-[40px] px-4 rounded-lg bg-gray-50 focus:bg-white focus:outline-none transition-all duration-200 ${errors.state ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-primary"
+                                        disabled={isSubmitting}
+                                        className={`w-full border-2 h-[40px] px-4 rounded-lg bg-gray-50 focus:bg-white focus:outline-none transition-all duration-200 disabled:opacity-50 ${errors.state ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-primary"
                                             }`}
                                     >
                                         <option value="">Selecione o estado</option>
-                                        {state.map((state) => (
-                                            <option key={state} value={state}>
-                                                {state}
+                                        {estados.map((estado) => (
+                                            <option key={estado} value={estado}>
+                                                {estado}
                                             </option>
                                         ))}
                                     </select>
@@ -216,13 +211,13 @@ export default function Register() {
                                     )}
                                 </div>
 
-                                {/* Campo Senha */}
                                 <div className="space-y-2 md:col-span-2">
                                     <label className="text-gray-700 font-medium">Senha *</label>
                                     <input
                                         {...register("password")}
                                         type="password"
-                                        className={`w-full border-2 h-[40px] px-4 rounded-lg bg-gray-50 focus:bg-white focus:outline-none transition-all duration-200 ${errors.password ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-primary"
+                                        disabled={isSubmitting}
+                                        className={`w-full border-2 h-[40px] px-4 rounded-lg bg-gray-50 focus:bg-white focus:outline-none transition-all duration-200 disabled:opacity-50 ${errors.password ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-primary"
                                             }`}
                                         placeholder="Digite sua senha (mínimo 6 caracteres)"
                                     />
@@ -232,16 +227,15 @@ export default function Register() {
                                 </div>
                             </div>
 
-                            {/* Botão de Cadastro */}
                             <button
                                 type="submit"
-                                className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white h-[45px] rounded-lg font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300"
+                                disabled={isSubmitting}
+                                className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white h-[45px] rounded-lg font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Cadastrar
+                                {isSubmitting ? "Cadastrando..." : "Cadastrar"}
                             </button>
                         </form>
 
-                        {/* Link para Login */}
                         <div className="text-center mt-6">
                             <p className="text-gray-600">
                                 Já possui uma conta?{" "}

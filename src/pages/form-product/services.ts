@@ -1,4 +1,3 @@
-import { string } from "yup";
 import api from "../../services/api";
 import { FormProducts } from ".";
 

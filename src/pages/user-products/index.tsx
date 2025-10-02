@@ -1,37 +1,101 @@
 import CardProductAdmin from "../../components/card-product-admin"
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { getUserProducts } from "./services";
+import { Products } from "../home/type";
+import { useAuthSessionStore } from "../../store/authStore";
+import { toastService } from "../../utils/toastConfig";
+import ListLoading from "../../components/list-loading";
+import { products } from "./type";
 
 export default function UserProducts() {
-
    const navigate = useNavigate();
+   const { token, isAuthenticated } = useAuthSessionStore();
+   const [products, setProducts] = useState<Products[]>([]);
+   const [isLoading, setIsLoading] = useState(false);
+
+   async function loadUserProducts() {
+      if (!isAuthenticated || !token) {
+         toastService.error("Você precisa estar logado");
+         navigate("/login");
+         return;
+      }
+
+      setIsLoading(true);
+      try {
+         const response = await getUserProducts(token);
+         setProducts(response.data);
+
+         if (response.data.length === 0) {
+            toastService.info("Você ainda não possui produtos cadastrados");
+         }
+      } catch (error) {
+         toastService.apiError(error, "Erro ao carregar seus produtos");
+      } finally {
+         setIsLoading(false);
+      }
+   }
+
+   const handleProductDeleted = () => {
+      loadUserProducts();
+   };
+
+   useEffect(() => {
+      loadUserProducts();
+   }, []);
 
    return (
-
       <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
          <div className="flex justify-between items-center">
-            {/* Título */}
-            <div className="text-center space-y-3">
+            <div className="space-y-3">
                <h1 className="text-3xl font-bold text-gray-800">Seus anúncios</h1>
-               <div className="w-24 h-1 bg-gradient-to-r from-primary to-secundary mx-auto rounded-full"></div>
+               <div className="w-24 h-1 bg-gradient-to-r from-primary to-secundary rounded-full"></div>
                <p className="text-gray-600 text-lg">Gerencie seus produtos anunciados</p>
             </div>
-            {/* Botão anunciar */}
+
             <div>
                <button
                   onClick={() => navigate("/form-products")}
-                  className="bg-secundary px-8 py-2 text-white rounded-md">
-                  Anunciar
+                  className="bg-secundary px-8 py-3 text-white rounded-lg font-semibold hover:bg-secundary/90 transition-colors shadow-md hover:shadow-lg"
+               >
+                  + Anunciar
                </button>
             </div>
          </div>
-         {/* Grid de produtos*/}
-         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 justify-items-center">
-            {Array.from({ length: 4 }, (_, index) => (
-               <CardProductAdmin key={index} />
-            ))}
-            <CardProductAdmin />
-         </div>
-         <p className="text-right">Total de itens: 4</p>
+
+         {isLoading && <ListLoading />}
+
+         {!isLoading && products.length === 0 && (
+            <div className="text-center py-16">
+               <p className="text-gray-500 text-lg mb-4">Você ainda não possui produtos cadastrados</p>
+               <button
+                  onClick={() => navigate("/form-products")}
+                  className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+               >
+                  Cadastrar primeiro produto
+               </button>
+            </div>
+         )}
+
+         {!isLoading && products.length > 0 && (
+            <>
+               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 justify-items-center">
+                  {products.map((products) => (
+                     <CardProductAdmin
+                        key={products._id}
+                        id={products._id}
+                        name={products.name}
+                        img={products.url1}
+                        price={products.price}
+                        onDelete={handleProductDeleted}
+                     />
+                  ))}
+               </div>
+               <p className="text-right text-gray-600">
+                  Total de itens: <span className="font-bold">{products.length}</span>
+               </p>
+            </>
+         )}
       </div>
    )
 }

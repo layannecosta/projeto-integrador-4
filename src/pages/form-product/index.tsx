@@ -4,8 +4,9 @@ import * as yup from "yup";
 import { useState } from "react";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import { saveApiProduct } from "./services";
 
-type FormProducts = {
+export type FormProducts = {
     name: string;
     manufacturer: string;
     category: string;
@@ -53,7 +54,6 @@ const schema = yup.object().shape({
         .min(10, "A descrição deve ter pelo menos 10 caracteres")
         .test("not-empty-html", "A descrição não pode estar vazia", (value) => {
             if (!value) return false;
-            // Remove tags HTML e verifica se há conteúdo
             const textContent = value.replace(/<[^>]*>/g, '').trim();
             return textContent.length > 0;
         }),
@@ -72,6 +72,26 @@ const schema = yup.object().shape({
 });
 
 export default function FormProducts() {
+    const { token } = useAuthSessionStore()
+
+    const [value, setValue] = useState("");
+
+    const onSubmit = (data: FormProducts) => {
+        console.log("Dados do formulário:", data);
+        alert("Produto cadastrado com sucesso!");
+        reset();
+    };
+
+    async function saveProduct(values: FormProducts) {
+        try {
+            const response = await saveApiProduct({ ...values, description: value }, token);
+            alert("Produto cadastrado com sucesso");
+        } catch (error) {
+            alert("Erro ao cadastrar produto");
+        }
+        // console.log("values");
+    }
+
     const {
         register,
         handleSubmit,
@@ -117,15 +137,9 @@ export default function FormProducts() {
         'link'
     ];
 
-    const onSubmit = (data: FormProducts) => {
-        console.log("Dados do formulário:", data);
-        alert("Produto cadastrado com sucesso!");
-        reset();
-    };
-
     return (
         <div>
-            <form onSubmit={handleSubmit(onSubmit)}>
+            <form onSubmit={handleSubmit(saveProduct)}>
                 <h1 className="font-bold mb-4 text-[20px]">Novo Produto</h1>
                 <div className="bg-white p-8 rounded-lg space-y-4">
                     <div className="flex gap-4">
@@ -233,9 +247,9 @@ export default function FormProducts() {
                             render={({ field }) => (
                                 <ReactQuill
                                     theme="snow"
-                                    style={{ height: 500 }}
-                                    value={field.value}
-                                    onChange={field.onChange}
+                                    style={{ height: 300 }}
+                                    value={value}
+                                    onChange={setValue}
                                     modules={modules}
                                     formats={formats}
                                     placeholder="Descreva o produto em detalhes..."
@@ -251,7 +265,9 @@ export default function FormProducts() {
 
                     {/* Botões  */}
                     <div className="flex justify-center gap-4 mt-4">
-                        <button className="bg-primary text-white px-8 py-2 rounded-lg">
+                        <button
+                            type="submit"
+                            className="bg-primary text-white px-8 py-2 rounded-lg">
                             Salvar
                         </button>
                         <button
@@ -264,4 +280,8 @@ export default function FormProducts() {
             </form>
         </div>
     );
+}
+
+function useAuthSessionStore(): { token: any; } {
+    throw new Error("Function not implemented.");
 }

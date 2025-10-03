@@ -1,17 +1,16 @@
 import CardProductAdmin from "../../components/card-product-admin"
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from "react";
-import { getUserProducts } from "./services";
+import { getApiMyProducts } from "./services";
 import { Products } from "../home/type";
 import { useAuthSessionStore } from "../../store/authStore";
 import { toastService } from "../../utils/toastConfig";
 import ListLoading from "../../components/list-loading";
-import { products } from "./type";
 
 export default function UserProducts() {
    const navigate = useNavigate();
    const { token, isAuthenticated } = useAuthSessionStore();
-   const [products, setProducts] = useState<Products[]>([]);
+   const [myProducts, setMyProducts] = useState<Products[]>([]);
    const [isLoading, setIsLoading] = useState(false);
 
    async function loadUserProducts() {
@@ -20,12 +19,10 @@ export default function UserProducts() {
          navigate("/login");
          return;
       }
-
       setIsLoading(true);
       try {
-         const response = await getUserProducts(token);
-         setProducts(response.data);
-
+         const response = await getApiMyProducts(token);
+         setMyProducts(response.data);
          if (response.data.length === 0) {
             toastService.info("Você ainda não possui produtos cadastrados");
          }
@@ -52,7 +49,6 @@ export default function UserProducts() {
                <div className="w-24 h-1 bg-gradient-to-r from-primary to-secundary rounded-full"></div>
                <p className="text-gray-600 text-lg">Gerencie seus produtos anunciados</p>
             </div>
-
             <div>
                <button
                   onClick={() => navigate("/form-products")}
@@ -65,7 +61,7 @@ export default function UserProducts() {
 
          {isLoading && <ListLoading />}
 
-         {!isLoading && products.length === 0 && (
+         {!isLoading && myProducts.length === 0 && (
             <div className="text-center py-16">
                <p className="text-gray-500 text-lg mb-4">Você ainda não possui produtos cadastrados</p>
                <button
@@ -77,22 +73,22 @@ export default function UserProducts() {
             </div>
          )}
 
-         {!isLoading && products.length > 0 && (
+         {!isLoading && myProducts.length > 0 && (
             <>
                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 justify-items-center">
-                  {products.map((products) => (
+                  {myProducts.map((product) => (
                      <CardProductAdmin
-                        key={products._id}
-                        id={products._id}
-                        name={products.name}
-                        img={products.url1}
-                        price={products.price}
+                        key={product._id}
+                        id={product._id}
+                        name={product.name}
+                        img={product.url1}
+                        price={product.price}
                         onDelete={handleProductDeleted}
                      />
                   ))}
                </div>
                <p className="text-right text-gray-600">
-                  Total de itens: <span className="font-bold">{products.length}</span>
+                  Total de itens: <span className="font-bold">{myProducts.length}</span>
                </p>
             </>
          )}

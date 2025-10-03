@@ -3,6 +3,10 @@ import { IoTrashOutline, IoPencilOutline } from "react-icons/io5"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import Modal from 'react-modal';
+import { removeApiProduct } from "./services";
+import { toastService } from "../../utils/toastConfig";
+import { getApiMyProducts } from "../../pages/user-products/services";
+import { CardProps } from "./types";
 
 const customStyles = {
     content: {
@@ -17,11 +21,22 @@ const customStyles = {
 
 Modal.setAppElement('#root');
 
-export default function CardProductAdmin() {
+export default function CardProductAdmin(props: CardProps) {
+    const { token } = useAuthSessionStore();
 
     const [modalIsOpen, setIsOpen] = useState(false);
 
     const navigate = useNavigate()
+
+    async function removeProduct() {
+        try {
+            await removeApiProduct(props.id, token);
+            await getApiMyProducts(token);
+            toastService.success("Produto removido com sucesso!");
+        } catch (error) {
+            toastService.apiError(error, "Erro ao remover produto");
+        }
+    }
 
     const handleDelete = () => {
         if (window.confirm("Tem certeza que deseja excluir este produto?")) {
@@ -86,7 +101,9 @@ export default function CardProductAdmin() {
                             <h1 className="text-[20px] font-bold text-center">Excluir produto</h1>
                             <p className="text-center">Deseja realmente excluir este produto?</p>
                             <div className="flex justify-center gap-4 mt-4">
-                                <button className="bg-primary text-white px-8 py-2 rounded-lg">
+                                <button
+                                    onClick={removeProduct}
+                                    className="bg-primary text-white px-8 py-2 rounded-lg">
                                     Sim
                                 </button>
                                 <button

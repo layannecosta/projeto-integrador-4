@@ -5,15 +5,7 @@ import { registerUser } from "./services";
 import { useNavigate } from "react-router-dom";
 import { toastService } from "../../utils/toastConfig";
 import { useState } from "react";
-
-export type RegisterForm = {
-    name: string;
-    email: string;
-    phone: string;
-    city: string;
-    state: string;
-    password: string;
-}
+import { RegisterForm } from "./types";
 
 const schema = yup.object().shape({
     name: yup
@@ -95,10 +87,12 @@ export default function Register() {
         setValue("phone", formatted, { shouldValidate: true });
     };
 
+    //função criar usuário
     async function createUser(values: RegisterForm) {
         setIsSubmitting(true);
         try {
             const response = await registerUser(values);
+            console.log(response.data);
             toastService.success("Usuário cadastrado com sucesso!");
             reset();
 
@@ -106,8 +100,9 @@ export default function Register() {
                 navigate("/login");
             }, 1500);
         } catch (error) {
-            toastService.apiError(error, "Não foi possível criar a conta");
-        } finally {
+            toastService.apiError(error, "Não foi possível criar a conta. Revise as informações.");
+        }
+        finally {
             setIsSubmitting(false);
         }
     }

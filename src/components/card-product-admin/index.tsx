@@ -1,4 +1,3 @@
-import img_product from "../../assets/product.png"
 import { IoTrashOutline, IoPencilOutline } from "react-icons/io5"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
@@ -7,6 +6,7 @@ import { removeApiProduct } from "./services";
 import { toastService } from "../../utils/toastConfig";
 import { getApiMyProducts } from "../../pages/user-products/services";
 import { CardProps } from "./types";
+import { useAuthSessionStore } from "../../hooks/use-auth-session/use-auth-session";
 
 const customStyles = {
     content: {
@@ -31,17 +31,12 @@ export default function CardProductAdmin(props: CardProps) {
     async function removeProduct() {
         try {
             await removeApiProduct(props.id, token);
-            await getApiMyProducts(token);
+            const response = await getApiMyProducts(token);
+            props.setMyProducts(response.data);
             toastService.success("Produto removido com sucesso!");
+            setIsOpen(false);
         } catch (error) {
             toastService.apiError(error, "Erro ao remover produto");
-        }
-    }
-
-    const handleDelete = () => {
-        if (window.confirm("Tem certeza que deseja excluir este produto?")) {
-            console.log("Produto excluído");
-            alert("Produto excluído com sucesso!");
         }
     }
 
@@ -55,8 +50,8 @@ export default function CardProductAdmin(props: CardProps) {
             <div className="relative p-6 bg-gradient-to-br from-gray-50 to-gray-100 flex justify-center items-center min-h-[180px]">
                 <img
                     className="w-24 h-24 object-contain transition-transform duration-300 group-hover:scale-110"
-                    src={img_product}
-                    alt="Produto"
+                    src={props.img}
+                    alt={props.name}
                 />
                 <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </div>
@@ -65,15 +60,14 @@ export default function CardProductAdmin(props: CardProps) {
             <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
                 <div className="space-y-2">
                     <h1 className="font-bold text-gray-800 text-lg leading-tight group-hover:text-primary transition-colors duration-200">
-                        Nome do Produto
+                        {props.name}
                     </h1>
-                    <p className="text-sm text-gray-600">Categoria: Eletrônicos</p>
+                    <p className="text-sm text-gray-600">Fabricante: {props.manufacturer}</p>
                 </div>
 
                 {/* Preço */}
                 <div className="space-y-1">
-                    <p className="text-2xl font-bold text-primary">R$ 799,99</p>
-                    <p className="text-xs text-gray-500">Publicado em: 20/01/2025</p>
+                    <p className="text-2xl font-bold text-primary">R$ {props.price.toFixed(2)}</p>
                 </div>
 
                 {/* Botões de ação */}

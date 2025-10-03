@@ -1,6 +1,6 @@
 
 
-export type products = {
+export type Product = {
     _id: string;
     name: string;
     manufacturer: string;

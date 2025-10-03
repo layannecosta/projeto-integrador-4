@@ -3,17 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from "react";
 import { getApiMyProducts } from "./services";
 import { Products } from "../home/type";
-import { useAuthSessionStore } from "../../store/authStore";
 import { toastService } from "../../utils/toastConfig";
 import ListLoading from "../../components/list-loading";
+import { useAuthSessionStore } from "../../hooks/use-auth-session/use-auth-session";
 
 export default function UserProducts() {
    const navigate = useNavigate();
+
    const { token, isAuthenticated } = useAuthSessionStore();
+
    const [myProducts, setMyProducts] = useState<Products[]>([]);
+
    const [isLoading, setIsLoading] = useState(false);
 
-   async function loadUserProducts() {
+   async function getMyProducts() {
       if (!isAuthenticated || !token) {
          toastService.error("Você precisa estar logado");
          navigate("/login");
@@ -34,11 +37,11 @@ export default function UserProducts() {
    }
 
    const handleProductDeleted = () => {
-      loadUserProducts();
+      getMyProducts();
    };
 
    useEffect(() => {
-      loadUserProducts();
+      getMyProducts();
    }, []);
 
    return (
@@ -83,7 +86,9 @@ export default function UserProducts() {
                         name={product.name}
                         img={product.url1}
                         price={product.price}
-                        onDelete={handleProductDeleted}
+                        manufacturer={product.manufacturer}
+                        setMyProducts={setMyProducts}
+                     // onDelete={handleProductDeleted}
                      />
                   ))}
                </div>

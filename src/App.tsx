@@ -24,10 +24,12 @@ import Dashboard from "./pages/dashboard";
 import UserProducts from "./pages/user-products";
 import FormProducts from "./pages/form-product";
 import Contact from "./pages/contact";
+import FormProductsEdit from "./pages/form-product-edit";
 
 // Importações do Toast
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 
 /**
  * Componente principal da aplicação
@@ -132,6 +134,15 @@ export default function App() {
       element: (
         <AdminTemplate>
           <FormProducts />
+        </AdminTemplate>
+      ),
+    },
+    {
+      // Rota cadastro de produtos
+      path: "/form-products-edit/:id",
+      element: (
+        <AdminTemplate>
+          <FormProductsEdit />
         </AdminTemplate>
       ),
     },

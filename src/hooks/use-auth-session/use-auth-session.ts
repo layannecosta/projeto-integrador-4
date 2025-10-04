@@ -1,6 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+type AuthSessionType = {
+    token: string;
+    setToken: (novoToken: string) => void;
+    clearToken: () => void;
+}
+
 export interface User {
     _id: string;
     name: string;
@@ -31,31 +37,20 @@ const MOCK_USER: User = {
     state: "SP",
 };
 
-export const useAuthSessionStore = create<AuthState>()(
+export const useAuthSessionStore = create<AuthSessionType>()(
     persist(
         (set) => ({
-            token: "DEV_TOKEN_MOCK",
-            user: MOCK_USER,
+            token: "",
+            setToken: (novoToken) => set((state) => ({ ...state, token: novoToken })),
+            clearToken: () => set((state) => ({ ...state, token: "" })),
             isAuthenticated: true,
-
-            setToken: (token) => set({ token, isAuthenticated: !!token }),
-
-            setUser: (user) => set({ user }),
-
-            login: (token, user) => set({
-                token,
-                user,
-                isAuthenticated: true
-            }),
-
-            logout: () => set({
-                token: null,
-                user: null,
-                isAuthenticated: false
-            }),
         }),
         {
-            name: 'auth-storage',
+            name: "@auth-session-store",
         }
     )
 );
+
+
+
+

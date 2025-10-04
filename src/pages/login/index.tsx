@@ -1,12 +1,28 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-
+import { auth } from "./services";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 type LoginForm = {
     email: string;
     password: string;
 }
 
+const schema = yup.object().shape({
+    email: yup.string().required("O campo é obrigatório").email("Digite um email válido"),
+    password: yup.string().required("O campo é obrigatório").min(4, "A senha precisa ter pelo menos 4 caracteres"),
+});
+
+
 export default function Login() {
+    const navigate = useNavigate();
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors: formErrors }
+    } = useForm<LoginForm>({ resolver: yupResolver(schema) });
 
     const [formData, setFormData] = useState<LoginForm>({
         email: "",
@@ -14,6 +30,17 @@ export default function Login() {
     });
 
     const [errors, setErrors] = useState<Partial<LoginForm>>({});
+
+    async function logar(values: LoginForm) {
+        try {
+            const response = await auth(values.email, values.password);
+            navigate("/dashboard");
+            alert("Login realizado com sucesso!");
+        } catch (error) {
+            alert("Erro ao autenticar usuário");
+        }
+    };
+
 
     // Função de validação simples
     const validateForm = (): boolean => {
@@ -54,16 +81,16 @@ export default function Login() {
         }
     };
 
-    // Função de submit
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+    // // Função de submit
+    // const handleSubmit = (e: React.FormEvent) => {
+    //     e.preventDefault();
 
-        if (validateForm()) {
-            console.log("Dados do login:", formData);
-            // Aqui você pode adicionar a lógica de autenticação
-            alert("Login realizado com sucesso!");
-        }
-    };
+    //     if (validateForm()) {
+    //         console.log("Dados do login:", formData);
+    //         navigate("/dashboard");
+    //         alert("Login realizado com sucesso!");
+    //     }
+    // };
 
     return (
         <div className="min-h-screen flex items-center justify-center px-4 py-8">
@@ -83,7 +110,7 @@ export default function Login() {
 
                     {/* Formulário */}
                     <div className="px-8 py-8">
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                        <form onSubmit={handleSubmit(logar)} className="space-y-6">
                             {/* Campo Email */}
                             <div className="space-y-2">
                                 <input

@@ -1,4 +1,4 @@
-export type Product = {
+export type product = {
     _id: string;
     name: string;
     manufacturer: string;
@@ -15,5 +15,7 @@ export type CardProps = {
     manufacturer: string;
     price: number;
     id: string;
-    setMyProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+    setMyProducts: React.Dispatch<React.SetStateAction<product[]>>;
 };
+
+

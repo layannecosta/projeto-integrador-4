@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { Products } from "./type";
 import ListLoading from "../../components/list-loading";
 import { toastService } from "../../utils/toastConfig";
+import { useAuthSessionStore } from "../../hooks/use-auth-session/use-auth-session";
 
 const itemsCategory = [
     {
@@ -54,6 +55,7 @@ const itemsCategory = [
 export default function Home() {
 
     const navigate = useNavigate();
+    const { token } = useAuthSessionStore();
 
     const [inputSearch, setInputSearch] = useState("");
 
@@ -95,6 +97,11 @@ export default function Home() {
         setIsLoadingRecommendedProducts(false);
     };
 
+    useEffect(() => {
+        if (token) {
+            navigate("/dashboard");
+        }
+    }, []);
 
     useEffect(() => {
         getRecentsProducts();

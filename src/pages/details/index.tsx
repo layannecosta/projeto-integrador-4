@@ -3,14 +3,15 @@ import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import { useParams } from 'react-router-dom';
 import { getApiDetailsProducts } from './services';
 import { useEffect, useState } from 'react';
-import { Products } from '../home/type';
 import { toastService } from '../../utils/toastConfig';
+import { Product } from './types';
+import { formatPrice } from '../../utils/format-price';
 
 export default function Details() {
     const params = useParams();
     const id = params?.id;
 
-    const [product, setProduct] = useState<Products | null>(null);
+    const [product, setProduct] = useState<Product | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     async function getDetailsProduct() {
@@ -62,6 +63,7 @@ export default function Details() {
         );
     }
 
+
     return (
         <div className="max-w-7xl mx-auto px-4 py-8 space-y-10">
             {/* Título */}
@@ -107,9 +109,8 @@ export default function Details() {
                     <div className="bg-gradient-to-r from-secundary to-secundary/90 shadow-lg rounded-2xl px-10 py-8 text-center relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
                         <div className="relative z-10">
-                            <p className="text-white/80 text-lg mb-2">Preço especial</p>
                             <p className="text-white text-4xl font-bold">
-                                R$ {product.price.toFixed(2)}
+                                {formatPrice(product.price)}
                             </p>
                             <p className="text-white/90 text-lg mt-2">à vista</p>
                         </div>
@@ -119,6 +120,10 @@ export default function Details() {
                     <div className="bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-100">
                         <div className="bg-gradient-to-r from-primary to-primary/90 px-6 py-4">
                             <h3 className="text-white text-lg font-bold">Informações do Vendedor</h3>
+                            <p className="text-white/80 text-lg mb-2">{product.user?.name || "-"}</p>
+                            <p className="text-white/80 text-lg mb-2">{product.user?.city || "-"}</p>
+                            <p className="text-white/80 text-lg mb-2">{product.user?.state || "-"}</p>
+
                         </div>
                         <div className="px-6 py-6 space-y-4">
                             <div className="space-y-3">

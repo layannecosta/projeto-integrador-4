@@ -1,11 +1,12 @@
 import { AxiosResponse } from "axios";
 import api from "../../services/api";
-import { Products } from "../home/type";
+import { Product } from "./types";
+
 
 export async function getApiDetailsProducts(
     id: string
 ): Promise<
-    AxiosResponse<Products, any>> {
+    AxiosResponse<Product, any>> {
     return await api.get(`/products/${id}`);
 }
 

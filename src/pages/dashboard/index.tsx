@@ -7,11 +7,12 @@ import { Carousel } from 'react-responsive-carousel';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import carousel1 from "../../assets/carousel1.jpg";
 import { useNavigate } from "react-router";
-import { getApiRecentsProducts, getApiRecommendedProducts } from "../home/services";
+import { getApiRecentsProducts, getApiRecommendedProducts } from "./services";
 import { useEffect, useState } from "react";
-import { Products } from "../home/type";
+import { Product } from "./type";
 import ListLoading from "../../components/list-loading";
 import { toastService } from "../../utils/toastConfig";
+import { useAuthSessionStore } from "../../hooks/use-auth-session/use-auth-session";
 
 const itemsCategory = [
     {
@@ -54,12 +55,13 @@ const itemsCategory = [
 export default function Dashboard() {
 
     const navigate = useNavigate();
+    const { token } = useAuthSessionStore();
 
     const [inputSearch, setInputSearch] = useState("");
 
-    const [recentsProducts, setRecentsProducts] = useState<Products[]>([]);
+    const [recentsProduct, setRecentsProduct] = useState<Product[]>([]);
 
-    const [recommendedProducts, setRecommendedProducts] = useState<Products[]>([]);
+    const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
 
     const [isLoadingRecentsProducts, setIsLoadingRecentsProducts] = useState(false);
 
@@ -68,6 +70,8 @@ export default function Dashboard() {
     function handleSearch() {
         if (inputSearch.trim()) {
             navigate(`/products/search/${inputSearch}`);
+        } else {
+            toastService.warning("Digite algo para buscar");
         }
     }
 
@@ -75,12 +79,12 @@ export default function Dashboard() {
         setIsLoadingRecentsProducts(true);
         try {
             const response = await getApiRecentsProducts();
-            setRecentsProducts(response.data);
+            setRecentsProduct(response.data);
         } catch (error) {
             toastService.apiError(error, "Erro ao buscar produtos recentes");
         }
         setIsLoadingRecentsProducts(false);
-    }
+    };
 
     async function getRecommendedProducts() {
         setIsLoadingRecommendedProducts(true);
@@ -91,8 +95,13 @@ export default function Dashboard() {
             toastService.apiError(error, "Erro ao buscar produtos recomendados");
         }
         setIsLoadingRecommendedProducts(false);
-    }
+    };
 
+    useEffect(() => {
+        if (token) {
+            navigate("/dashboard");
+        }
+    }, []);
 
     useEffect(() => {
         getRecentsProducts();
@@ -179,7 +188,7 @@ export default function Dashboard() {
                 {isLoadingRecentsProducts && <ListLoading />}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
                     {
-                        recentsProducts.map((product) => (
+                        recentsProduct.map((product) => (
                             <CardProduct
                                 key={product._id}
                                 id={product._id}
@@ -211,7 +220,6 @@ export default function Dashboard() {
                             <h2 className="text-white font-bold text-3xl">Explore por Categorias</h2>
                             <p className="text-white/80 text-lg">Encontre exatamente o que você procura</p>
                         </div>
-                        {isLoadingRecommendedProducts && <ListLoading />}
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-6 justify-items-center">
                             {itemsCategory.map((category, index) => (
                                 <div

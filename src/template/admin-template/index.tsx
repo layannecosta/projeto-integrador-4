@@ -1,13 +1,22 @@
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, useEffect } from "react";
 import Footer from "../../components/footer/Footer";
 import HeaderAdmin from "../../components/headerAdmin/HeaderAdmin";
+import { useAuthSessionStore } from "../../hooks/use-auth-session/use-auth-session";
 import { useNavigate } from "react-router";
 
-// Tipagem do componente (pode ser removida se não utilizada)
 type AdminTempaleteProps = PropsWithChildren & {}
 
 export default function AdminTemplate(props: AdminTempaleteProps) {
-    const navigate = useNavigate()
+    const { token } = useAuthSessionStore();
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!token) {
+            navigate("/");
+        }
+    }, []);
+
     return (
         <div className="min-h-screen flex flex-col bg-slate-100">
             {/* Cabeçalho da aplicação */}

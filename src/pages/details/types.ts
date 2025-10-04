@@ -1,4 +1,4 @@
-export type Products = {
+export type Product = {
     category: string;
     _id: string;
     name: string;
@@ -7,4 +7,11 @@ export type Products = {
     url1: string;
     url2: string;
     description: string;
+    user: {
+        name: string;
+        email: string;
+        phone: string;
+        city: string;
+        state: string;
+    };
 };

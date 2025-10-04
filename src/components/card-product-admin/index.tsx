@@ -73,7 +73,7 @@ export default function CardProductAdmin(props: CardProps) {
                 {/* Botões de ação */}
                 <div className="pt-3 space-y-2">
                     <button
-                        onClick={handleEdit}
+                        onClick={() => navigate(`/form-products-edit/${props.id}`)}
                         className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
                     >
                         <IoPencilOutline className="text-xl" />

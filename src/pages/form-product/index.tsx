@@ -273,7 +273,7 @@ export default function FormProducts() {
                     {/* Botões  */}
                     <div className="flex justify-center gap-4 mt-4">
                         <button
-                            // type="submit"
+                            type="submit"
                             className="bg-primary text-white px-8 py-2 rounded-lg hover:bg-primary/90 transition-colors"
                         >
                             Salvar

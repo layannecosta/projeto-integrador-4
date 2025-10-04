@@ -1,9 +1,9 @@
-import { useState } from "react";
 import { useNavigate } from "react-router";
 import { auth } from "./services";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+
 type LoginForm = {
     email: string;
     password: string;
@@ -14,22 +14,14 @@ const schema = yup.object().shape({
     password: yup.string().required("O campo é obrigatório").min(4, "A senha precisa ter pelo menos 4 caracteres"),
 });
 
-
 export default function Login() {
     const navigate = useNavigate();
 
     const {
         register,
         handleSubmit,
-        formState: { errors: formErrors }
+        formState: { errors }
     } = useForm<LoginForm>({ resolver: yupResolver(schema) });
-
-    const [formData, setFormData] = useState<LoginForm>({
-        email: "",
-        password: ""
-    });
-
-    const [errors, setErrors] = useState<Partial<LoginForm>>({});
 
     async function logar(values: LoginForm) {
         try {
@@ -39,65 +31,12 @@ export default function Login() {
         } catch (error) {
             alert("Erro ao autenticar usuário");
         }
-    };
-
-
-    // Função de validação simples
-    const validateForm = (): boolean => {
-        const newErrors: Partial<LoginForm> = {};
-
-        // Validação do email
-        if (!formData.email) {
-            newErrors.email = "O campo é obrigatório";
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = "Digite um email válido";
-        }
-
-        // Validação da senha
-        if (!formData.password) {
-            newErrors.password = "O campo é obrigatório";
-        } else if (formData.password.length < 4) {
-            newErrors.password = "A senha precisa ter pelo menos 4 caracteres";
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    // Função para lidar com mudanças nos inputs
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-
-        // Limpar erro do campo quando o usuário começar a digitar
-        if (errors[name as keyof LoginForm]) {
-            setErrors(prev => ({
-                ...prev,
-                [name]: undefined
-            }));
-        }
-    };
-
-    // // Função de submit
-    // const handleSubmit = (e: React.FormEvent) => {
-    //     e.preventDefault();
-
-    //     if (validateForm()) {
-    //         console.log("Dados do login:", formData);
-    //         navigate("/dashboard");
-    //         alert("Login realizado com sucesso!");
-    //     }
-    // };
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center px-4 py-8">
             <div className="w-full max-w-md">
-                {/* Container principal */}
                 <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-                    {/* Header colorido */}
                     <div className="bg-gradient-to-r from-primary to-primary/90 px-8 py-8 text-center relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
                         <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
@@ -108,22 +47,19 @@ export default function Login() {
                         </div>
                     </div>
 
-                    {/* Formulário */}
                     <div className="px-8 py-8">
                         <form onSubmit={handleSubmit(logar)} className="space-y-6">
                             {/* Campo Email */}
                             <div className="space-y-2">
                                 <input
-                                    name="email"
+                                    {...register("email")}
                                     type="email"
-                                    value={formData.email}
-                                    onChange={handleInputChange}
                                     className="w-full border-2 border-gray-200 h-[40px] px-4 rounded-lg bg-gray-50 focus:bg-white focus:border-primary focus:outline-none transition-all duration-200"
                                     placeholder="Digite seu E-mail"
                                 />
                                 {errors.email && (
                                     <span className="text-red-600 text-sm">
-                                        {errors.email}
+                                        {errors.email.message}
                                     </span>
                                 )}
                             </div>
@@ -131,16 +67,14 @@ export default function Login() {
                             {/* Campo Senha */}
                             <div className="space-y-2">
                                 <input
-                                    name="password"
+                                    {...register("password")}
                                     type="password"
-                                    value={formData.password}
-                                    onChange={handleInputChange}
                                     className="w-full border-2 border-gray-200 h-[40px] px-4 rounded-lg bg-gray-50 focus:bg-white focus:border-primary focus:outline-none transition-all duration-200"
                                     placeholder="Digite sua senha"
                                 />
                                 {errors.password && (
                                     <span className="text-red-600 text-sm">
-                                        {errors.password}
+                                        {errors.password.message}
                                     </span>
                                 )}
                             </div>
